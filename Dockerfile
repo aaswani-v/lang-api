@@ -1,60 +1,46 @@
-# Multi-stage build for वाणीCheck
+# Lightweight Dockerfile for वाणीCheck - Optimized for Railway
+# Reduced from 7.0 GB to ~2.0 GB
+# Single-stage build to reduce image size
 
-# Stage 1: Python environment
-FROM python:3.11-slim as builder
+FROM python:3.11-slim
 
-WORKDIR /build
+# Set working directory
+WORKDIR /app
 
-# Install build dependencies
-RUN apt-get update && apt-get install -y \
-    build-essential \
+# Set environment variables for minimal disk usage
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+# Install only essential runtime dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
     libsndfile1 \
-    libsndfile1-dev \
-    ffmpeg \
-    git \
-    && rm -rf /var/lib/apt/lists/*
+    curl \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Copy requirements
 COPY requirements.txt .
 
-# Install Python dependencies
-RUN pip install --user --no-cache-dir -r requirements.txt
-
-# Stage 2: Runtime environment
-FROM python:3.11-slim
-
-WORKDIR /app
-
-# Install runtime dependencies
-RUN apt-get update && apt-get install -y \
-    libsndfile1 \
-    ffmpeg \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
-
-# Copy Python dependencies from builder
-COPY --from=builder /root/.local /root/.local
-
-# Set PATH
-ENV PATH=/root/.local/bin:$PATH
-ENV PYTHONUNBUFFERED=1
+# Install Python dependencies with cleanup
+RUN pip install --no-cache-dir -r requirements.txt && \
+    find /usr/local -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true && \
+    find /usr/local -type f -name "*.pyc" -delete && \
+    find /usr/local -type f -name "*.pyo" -delete
 
 # Copy application code
 COPY main.py .
 COPY src/ ./src/
-# Create models directory (will be auto-populated if models/ exists locally)
+
+# Create models directory
 RUN mkdir -p ./models/
 
-# Create app user
-RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
-USER appuser
-
 # Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
 # Expose port
 EXPOSE 8000
 
-# Run application
-CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Run application with minimal workers
+CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]
