@@ -42,7 +42,8 @@ ENV PYTHONUNBUFFERED=1
 # Copy application code
 COPY main.py .
 COPY src/ ./src/
-COPY models/ ./models/
+# Create models directory (will be auto-populated if models/ exists locally)
+RUN mkdir -p ./models/
 
 # Create app user
 RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app

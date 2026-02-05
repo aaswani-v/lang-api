@@ -1,0 +1,2 @@
+# This file ensures the models/ directory exists in git
+# Models will be downloaded at runtime or can be placed here
