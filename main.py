@@ -46,6 +46,17 @@ SAMPLE_RATE = 16000
 API_KEY = os.getenv("VANICHECK_API_KEY", "vanicheck-secret-key-2026")
 MIN_CONFIDENCE_THRESHOLD = 0.70
 
+# ==================== Utilities ====================
+def convert_numpy_types(obj):
+    """Convert all numpy types to Python native types for JSON serialization"""
+    if isinstance(obj, dict):
+        return {k: convert_numpy_types(v) for k, v in obj.items()}
+    elif isinstance(obj, (list, tuple)):
+        return [convert_numpy_types(item) for item in obj]
+    elif isinstance(obj, (np.bool_, np.integer, np.floating)):
+        return obj.item()
+    else:
+        return obj
 
 # ==================== Models ====================
 class AudioDetectionRequest(BaseModel):
@@ -385,18 +396,23 @@ async def detect_deepfake(request: AudioDetectionRequest, x_api_key: Optional[st
         # Calculate processing time
         processing_time_ms = (time.time() - start_time) * 1000
         
+        # Prepare forensic analysis with converted types
+        forensic_data = convert_numpy_types({
+            "glottal_pulses": forensic_result["glottal_pulses"],
+            "spectral_gaps": forensic_result["spectral_gaps"],
+            "breathing": forensic_result["breathing"],
+            "harmonics": forensic_result["harmonics"],
+            "detection_scores": {
+                "ai_probability": float(ai_prob),
+                "human_probability": float(1.0 - ai_prob)
+            }
+        })
+        
         return AudioDetectionResponse(
             verdict=verdict,
-            confidence=confidence,
+            confidence=float(confidence),
             explanation=explanation,
-            forensic_analysis={
-                "glottal_pulses": forensic_result["glottal_pulses"],
-                "spectral_gaps": forensic_result["spectral_gaps"],
-                "breathing": forensic_result["breathing"],
-                "harmonics": forensic_result["harmonics"],
-                "detection_scores": {
-                    "ai_probability": float(ai_prob),
-                    "human_probability": float(1.0 - ai_prob)
+            forensic_analysis=forensic_data,
                 }
             },
             processing_time_ms=processing_time_ms,
