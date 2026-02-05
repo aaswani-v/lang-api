@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 app = FastAPI(
     title="वाणीCheck - Audio Deepfake Detection API",
     description="Robust multi-lingual deepfake audio detection using spectral analysis",
-    version="1.0.0"
+    version="1.0.1"  # Updated to support hackathon form field names
 )
 
 # Add CORS middleware
