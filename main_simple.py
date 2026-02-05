@@ -321,14 +321,14 @@ async def v1_health_check():
     }
 
 @app.post("/v1/detect", response_model=AudioDetectionResponse, tags=["Detection"])
-async def detect_deepfake(request: AudioDetectionRequest, x_api_key: Optional[str] = Header(None)):
+async def detect_deepfake(request: AudioDetectionRequest, api_key: str = Header(None)):
     """Main deepfake detection endpoint"""
     start_time = time.time()
     
     # Verify API key
-    if x_api_key is None:
+    if api_key is None:
         raise HTTPException(status_code=401, detail="X-API-KEY header missing")
-    if x_api_key != API_KEY:
+    if api_key != API_KEY:
         raise HTTPException(status_code=403, detail="Invalid API key")
     
     try:

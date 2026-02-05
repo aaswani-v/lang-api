@@ -34,10 +34,17 @@ def create_human_audio():
 def audio_to_base64(audio, sr):
     """Convert audio array to base64"""
     with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
-        sf.write(tmp.name, audio, sr)
-        with open(tmp.name, 'rb') as f:
+        tmp_path = tmp.name
+    
+    try:
+        sf.write(tmp_path, audio, sr)
+        with open(tmp_path, 'rb') as f:
             audio_b64 = base64.b64encode(f.read()).decode()
-        Path(tmp.name).unlink()
+    finally:
+        try:
+            Path(tmp_path).unlink()
+        except:
+            pass
     return audio_b64
 
 def test_health_check(api_url):
