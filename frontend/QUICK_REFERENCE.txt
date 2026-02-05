@@ -1,0 +1,142 @@
+# 🚀 QUICK DEPLOYMENT CHEAT SHEET
+
+## Your Frontend is Ready!
+
+Files created:
+- ✅ index.html (UI)
+- ✅ style.css (Styling)
+- ✅ script.js (API Integration)
+- ✅ Already connected to your live API
+
+---
+
+## DEPLOY IN 3 STEPS (Pick One)
+
+### OPTION 1: NETLIFY (Recommended - Easiest)
+```
+1. Go to: https://app.netlify.com
+2. Click: "Add new site" → "Deploy manually"
+3. Drag & drop your frontend folder
+   Done! ✅
+```
+
+Live in: 30 seconds
+Free forever: ✅
+
+---
+
+### OPTION 2: VERCEL (Also Easy)
+```
+1. Go to: https://vercel.com
+2. Click: "Add new project" → "Import"
+3. Upload your folder
+   Done! ✅
+```
+
+Live in: 1 minute
+Free forever: ✅
+
+---
+
+### OPTION 3: GITHUB PAGES (Free Alternative)
+```
+1. Create repo on GitHub
+2. Upload files
+3. Settings → Pages → Deploy from branch
+   Done! ✅
+```
+
+Live in: 2 minutes
+Free forever: ✅
+
+---
+
+## AFTER DEPLOYMENT
+
+You'll get a URL like:
+```
+https://vanicheck-xxx.netlify.app
+```
+
+Copy this URL → Submit to Hackathon Form → Done!
+
+---
+
+## YOUR LIVE API
+
+Already integrated! Uses:
+- **Endpoint**: https://lang-api-production.up.railway.app/v1/detect
+- **Key**: vanicheck-secret-key-2026 (in script.js)
+- **Status**: ✅ Active
+
+---
+
+## FEATURES INCLUDED
+
+✅ Modern, clean UI (no typical AI template vibes)
+✅ Drag & drop audio upload
+✅ Multi-language support (EN, HI, TA, TE, ML)
+✅ Real-time deepfake detection
+✅ Confidence scores & detailed results
+✅ Mobile responsive
+✅ Professional animations
+✅ Error handling
+✅ Live API integration
+
+---
+
+## TEST LOCALLY (Optional)
+
+```bash
+# In your frontend folder:
+python -m http.server 8000
+
+# Open: http://localhost:8000
+# Try uploading your test audio
+```
+
+---
+
+## SUBMIT TO HACKATHON
+
+Form Fields:
+```
+Deployed URL: [Your Netlify/Vercel/GitHub Pages URL]
+API Key: vanicheck-secret-key-2026 (if asked)
+Backend: https://lang-api-production.up.railway.app/v1/detect (if asked)
+```
+
+---
+
+## TROUBLESHOOTING
+
+**Audio upload not working?**
+→ Check file type (WAV, MP3, OGG, WebM, FLAC)
+→ Check file size (max 30MB)
+
+**Results not showing?**
+→ Open DevTools (F12 → Console)
+→ Check for error messages
+→ Verify API endpoint is reachable
+
+**CORS errors?**
+→ Already handled! API allows all origins
+
+---
+
+## DONE! 🎉
+
+You now have:
+✅ Beautiful, modern frontend
+✅ Live API integration
+✅ Production-ready code
+✅ Easy deployment
+✅ Professional branding
+
+**Next: Pick deployment option above and go live!**
+
+After deployment → Submit to hackathon → Sleep 😴
+
+---
+
+**Questions? Check DEPLOYMENT_GUIDE.md for detailed instructions**

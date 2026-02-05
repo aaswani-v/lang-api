@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>वाणीCheck - Deepfake Detection</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <h1>वाणीCheck</h1>
+                <p class="subtitle">Advanced Audio Deepfake Detection</p>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div class="card upload-card">
+                <h2>Upload Audio</h2>
+                <div class="upload-area" id="uploadArea">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                    <p class="upload-text">Drop your audio file here or click to browse</p>
+                    <p class="upload-hint">Supports WAV, MP3, OGG (Max 30MB)</p>
+                    <input type="file" id="audioInput" accept="audio/*" hidden>
+                </div>
+
+                <div class="form-group">
+                    <label for="language">Language</label>
+                    <select id="language">
+                        <option value="english">English</option>
+                        <option value="hindi">Hindi (हिंदी)</option>
+                        <option value="tamil">Tamil (தமிழ்)</option>
+                        <option value="telugu">Telugu (తెలుగు)</option>
+                        <option value="malayalam">Malayalam (മലയാളം)</option>
+                    </select>
+                </div>
+
+                <button id="analyzeBtn" class="btn btn-primary" disabled>Analyze Audio</button>
+            </div>
+
+            <div class="card result-card" id="resultCard" style="display: none;">
+                <div class="result-header">
+                    <h2>Analysis Result</h2>
+                    <button class="btn-close" id="closeResultBtn">&times;</button>
+                </div>
+
+                <div class="result-content">
+                    <div class="confidence-section">
+                        <div class="confidence-label">Deepfake Probability</div>
+                        <div class="confidence-bar">
+                            <div class="confidence-fill" id="confidenceFill"></div>
+                        </div>
+                        <div class="confidence-value" id="confidenceValue">0%</div>
+                    </div>
+
+                    <div class="verdict" id="verdict">
+                        <div class="verdict-badge" id="verdictBadge">Analyzing...</div>
+                        <p id="verdictText">Processing your audio...</p>
+                    </div>
+
+                    <div class="details">
+                        <div class="detail-item">
+                            <span class="detail-label">Detection Confidence</span>
+                            <span class="detail-value" id="detailConfidence">-</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Audio Duration</span>
+                            <span class="detail-value" id="detailDuration">-</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Language Detected</span>
+                            <span class="detail-value" id="detailLanguage">-</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Processing Time</span>
+                            <span class="detail-value" id="detailTime">-</span>
+                        </div>
+                    </div>
+
+                    <div class="explanation" id="explanation">
+                        <h3>What This Means</h3>
+                        <p id="explanationText"></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-section">
+                <h3>How It Works</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-icon">1</div>
+                        <h4>Upload Audio</h4>
+                        <p>Select an audio file from your device</p>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-icon">2</div>
+                        <h4>Process</h4>
+                        <p>Our AI analyzes acoustic features</p>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-icon">3</div>
+                        <h4>Detect</h4>
+                        <p>Identifies deepfake indicators</p>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-icon">4</div>
+                        <h4>Report</h4>
+                        <p>Get confidence scores instantly</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>&copy; 2026 वाणीCheck. Protecting voice authenticity.</p>
+        </footer>
+    </div>
+
+    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+        <div class="spinner"></div>
+        <p>Analyzing your audio...</p>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
