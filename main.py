@@ -413,8 +413,6 @@ async def detect_deepfake(request: AudioDetectionRequest, x_api_key: Optional[st
             confidence=float(confidence),
             explanation=explanation,
             forensic_analysis=forensic_data,
-                }
-            },
             processing_time_ms=processing_time_ms,
             timestamp=datetime.utcnow().isoformat()
         )
