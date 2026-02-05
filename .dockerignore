@@ -1,0 +1,23 @@
+# Build context for Docker
+.git
+.gitignore
+__pycache__
+*.pyc
+*.pyo
+*.egg-info
+.env
+.venv
+venv/
+.pytest_cache
+.coverage
+htmlcov/
+dist/
+build/
+*.log
+.DS_Store
+node_modules/
+.idea/
+.vscode/
+*.swp
+*.swo
+*~

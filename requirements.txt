@@ -1,0 +1,25 @@
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.5.0
+torch==2.6.0
+torchaudio==2.6.0
+transformers==4.36.2
+librosa==0.10.0
+numpy>=1.26.0
+scipy==1.13.0
+soundfile==0.12.1
+python-multipart==0.0.6
+python-dotenv==1.0.0
+
+# Testing dependencies
+pytest==7.4.3
+pytest-asyncio==0.21.1
+httpx==0.25.2
+locust==2.19.0
+
+# ONNX Runtime (for optimized inference)
+onnx==1.16.0
+onnxruntime==1.18.0
+
+# Optional GPU support
+# torch-cuda-runtime  # Uncomment for CUDA support
