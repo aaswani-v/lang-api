@@ -48,9 +48,19 @@ MIN_CONFIDENCE_THRESHOLD = 0.70
 
 # ==================== Models ====================
 class AudioDetectionRequest(BaseModel):
-    audio_data: str  # Base64 encoded audio
+    audio_data: Optional[str] = None  # Base64 encoded audio (our format)
+    audioBase64: Optional[str] = None  # Alternative format (hackathon form)
     language: str
+    audioFormat: Optional[str] = None  # Optional format field
     filename: Optional[str] = None
+    
+    def __init__(self, **data):
+        # Support both naming conventions
+        if 'audioBase64' in data and 'audio_data' not in data:
+            data['audio_data'] = data.pop('audioBase64')
+        super().__init__(**data)
+        # Normalize language to lowercase
+        self.language = self.language.lower()
 
 class AudioDetectionResponse(BaseModel):
     verdict: str  # "HUMAN" or "AI_GENERATED"
@@ -332,6 +342,10 @@ async def detect_deepfake(request: AudioDetectionRequest, x_api_key: Optional[st
         raise HTTPException(status_code=403, detail="Invalid API key")
     
     try:
+        # Validate audio_data is present
+        if not request.audio_data:
+            raise HTTPException(status_code=400, detail="audio_data field is required")
+        
         # Validate language
         if request.language.lower() not in SUPPORTED_LANGUAGES:
             raise HTTPException(status_code=400, detail=f"Language {request.language} not supported")
