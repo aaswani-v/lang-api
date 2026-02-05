@@ -6,9 +6,11 @@ Simplified version without heavy dependencies
 from fastapi import FastAPI, HTTPException, Header, File, UploadFile
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field, field_validator, ConfigDict
+from pydantic import BaseModel, Field, field_validator, model_validator, ConfigDict
 from typing import Optional
 import os
+import urllib.request
+import mimetypes
 import logging
 import base64
 import numpy as np
@@ -64,6 +66,7 @@ class AudioDetectionRequest(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
     
     audio_data: Optional[str] = Field(None, alias="audioBase64")
+    audio_url: Optional[str] = Field(None, alias="audioUrl")
     language: str
     audioFormat: Optional[str] = None
     filename: Optional[str] = None
@@ -73,12 +76,11 @@ class AudioDetectionRequest(BaseModel):
     def normalize_language(cls, v):
         return v.lower() if v else v
     
-    @field_validator('audio_data', mode='before')
-    @classmethod
-    def check_audio_data(cls, v):
-        if not v:
-            raise ValueError('audio_data or audioBase64 is required')
-        return v
+    @model_validator(mode='after')
+    def ensure_audio_source(self):
+        if not self.audio_data and not self.audio_url:
+            raise ValueError('audio_data/audioBase64 or audio_url/audioUrl is required')
+        return self
 
 class AudioDetectionResponse(BaseModel):
     verdict: str  # "HUMAN" or "AI_GENERATED"
@@ -270,6 +272,34 @@ class AudioProcessor:
         except Exception as e:
             logger.error(f"Audio decoding failed: {e}")
             raise HTTPException(status_code=400, detail="Invalid audio data")
+
+    @staticmethod
+    def decode_audio_from_url(audio_url: str) -> np.ndarray:
+        """Download audio from URL and decode"""
+        try:
+            with urllib.request.urlopen(audio_url) as response:
+                audio_bytes = response.read()
+                content_type = response.headers.get('Content-Type', '')
+
+            suffix = None
+            if content_type:
+                ext = mimetypes.guess_extension(content_type.split(';')[0].strip())
+                if ext:
+                    suffix = ext
+
+            if not suffix:
+                suffix = os.path.splitext(audio_url.split('?')[0])[1] or ".wav"
+
+            with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+                tmp.write(audio_bytes)
+                tmp_path = tmp.name
+
+            audio, sr = librosa.load(tmp_path, sr=SAMPLE_RATE)
+            os.remove(tmp_path)
+            return audio
+        except Exception as e:
+            logger.error(f"Audio URL decoding failed: {e}")
+            raise HTTPException(status_code=400, detail="Invalid audio URL")
     
     @staticmethod
     def preprocess_audio(audio: np.ndarray) -> np.ndarray:
@@ -373,20 +403,23 @@ async def detect_deepfake(request: AudioDetectionRequest, x_api_key: Optional[st
         raise HTTPException(status_code=403, detail="Invalid API key")
     
     try:
-        # Validate audio_data is present
-        if not request.audio_data:
-            raise HTTPException(status_code=400, detail="audio_data field is required")
+        # Validate audio source
+        if not request.audio_data and not request.audio_url:
+            raise HTTPException(status_code=400, detail="audio_data or audio_url field is required")
         
         # Validate language
         if request.language.lower() not in SUPPORTED_LANGUAGES:
             raise HTTPException(status_code=400, detail=f"Language {request.language} not supported")
         
         # Decode and preprocess audio
-        audio_data = AudioProcessor.decode_audio(
-            request.audio_data,
-            audio_format=request.audioFormat,
-            filename=request.filename
-        )
+        if request.audio_url:
+            audio_data = AudioProcessor.decode_audio_from_url(request.audio_url)
+        else:
+            audio_data = AudioProcessor.decode_audio(
+                request.audio_data,
+                audio_format=request.audioFormat,
+                filename=request.filename
+            )
         duration_seconds = len(audio_data) / float(SAMPLE_RATE)
         if duration_seconds > MAX_AUDIO_SECONDS:
             raise HTTPException(
