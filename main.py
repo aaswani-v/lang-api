@@ -2,7 +2,7 @@
 वाणीCheck - Multi-lingual Deepfake Audio Detection API
 Simplified version without heavy dependencies
 """
-
+#it's workign bhenchod
 from fastapi import FastAPI, HTTPException, Header, File, UploadFile
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware

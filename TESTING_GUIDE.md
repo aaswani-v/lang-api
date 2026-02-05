@@ -34,6 +34,7 @@ C:\Users\Ash\AppData\Local\Programs\Python\Python313\python.exe main.py
 
 2. **Open browser** and go to:
 ```
+sk
 http://localhost:8000/docs
 ```
 
