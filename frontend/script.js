@@ -103,6 +103,13 @@ async function analyzeAudio() {
         const response = await fetch(API_ENDPOINT, {
             method: 'POST',
             headers: {
+        const startRecordBtn = document.getElementById('startRecordBtn');
+        const stopRecordBtn = document.getElementById('stopRecordBtn');
+        const recordStatus = document.getElementById('recordStatus');
+        const recordedAudio = document.getElementById('recordedAudio');
+
+        let mediaRecorder = null;
+        let recordedChunks = [];
                 'Content-Type': 'application/json',
                 'X-API-KEY': API_KEY,
                 'Authorization': `Bearer ${API_KEY}`
@@ -161,6 +168,12 @@ function getAudioFormat(filename) {
 // Display Results
 function displayResults(result, processingTime) {
     // Extract data
+
+        // Recording Controls
+        if (startRecordBtn && stopRecordBtn) {
+            startRecordBtn.addEventListener('click', startRecording);
+            stopRecordBtn.addEventListener('click', stopRecording);
+        }
     const isFake = result.is_deepfake || false;
     const confidence = (result.confidence * 100).toFixed(1);
     const language = result.language_detected || languageSelect.value;
@@ -222,6 +235,72 @@ function showError(message) {
         right: 20px;
         background: var(--danger);
         color: white;
+        async function startRecording() {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                showError('Recording is not supported in this browser. Please upload a file instead.');
+                return;
+            }
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                recordedChunks = [];
+
+                const options = MediaRecorder.isTypeSupported('audio/webm')
+                    ? { mimeType: 'audio/webm' }
+                    : MediaRecorder.isTypeSupported('audio/ogg')
+                        ? { mimeType: 'audio/ogg' }
+                        : {};
+
+                mediaRecorder = new MediaRecorder(stream, options);
+
+                mediaRecorder.ondataavailable = (event) => {
+                    if (event.data && event.data.size > 0) {
+                        recordedChunks.push(event.data);
+                    }
+                };
+
+                mediaRecorder.onstop = () => {
+                    const blob = new Blob(recordedChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
+                    const fileName = `recording-${Date.now()}.${blob.type.includes('ogg') ? 'ogg' : 'webm'}`;
+                    const file = new File([blob], fileName, { type: blob.type });
+
+                    selectedFile = file;
+                    uploadArea.innerHTML = `
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        <p class="upload-text">${file.name}</p>
+                        <p class="upload-hint">Recorded from mic</p>
+                    `;
+                    uploadArea.style.borderColor = 'var(--success)';
+                    analyzeBtn.disabled = false;
+
+                    recordedAudio.src = URL.createObjectURL(blob);
+                    recordedAudio.style.display = 'block';
+
+                    recordStatus.textContent = 'Recording saved. You can analyze it now.';
+                    recordStatus.classList.remove('recording');
+                };
+
+                mediaRecorder.start();
+                startRecordBtn.disabled = true;
+                stopRecordBtn.disabled = false;
+                analyzeBtn.disabled = true;
+                recordStatus.textContent = 'Recording... Speak now.';
+                recordStatus.classList.add('recording');
+            } catch (error) {
+                showError('Microphone access denied or unavailable.');
+            }
+        }
+
+        function stopRecording() {
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+                mediaRecorder.stream.getTracks().forEach((track) => track.stop());
+            }
+            startRecordBtn.disabled = false;
+            stopRecordBtn.disabled = true;
+        }
         padding: 16px 24px;
         border-radius: 8px;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);

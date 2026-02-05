@@ -45,6 +45,7 @@ SUPPORTED_LANGUAGES = ["tamil", "english", "hindi", "malayalam", "telugu"]
 SAMPLE_RATE = 16000
 API_KEY = os.getenv("VANICHECK_API_KEY", "vanicheck-secret-key-2026")
 MIN_CONFIDENCE_THRESHOLD = 0.70
+MAX_AUDIO_SECONDS = float(os.getenv("MAX_AUDIO_SECONDS", "20"))
 
 # ==================== Utilities ====================
 def convert_numpy_types(obj):
@@ -85,6 +86,8 @@ class AudioDetectionResponse(BaseModel):
     explanation: str
     forensic_analysis: dict
     processing_time_ms: float
+    duration_seconds: float
+    language_detected: str
     model_version: str = "1.0.0-lite"
     timestamp: str
 
@@ -369,6 +372,13 @@ async def detect_deepfake(request: AudioDetectionRequest, x_api_key: Optional[st
         
         # Decode and preprocess audio
         audio_data = AudioProcessor.decode_audio(request.audio_data)
+        duration_seconds = len(audio_data) / float(SAMPLE_RATE)
+        if duration_seconds > MAX_AUDIO_SECONDS:
+            raise HTTPException(
+                status_code=413,
+                detail=f"Audio too long. Max allowed is {MAX_AUDIO_SECONDS:.0f}s"
+            )
+
         audio_data = AudioProcessor.preprocess_audio(audio_data)
         
         # Run detection
@@ -414,6 +424,8 @@ async def detect_deepfake(request: AudioDetectionRequest, x_api_key: Optional[st
             explanation=explanation,
             forensic_analysis=forensic_data,
             processing_time_ms=processing_time_ms,
+            duration_seconds=float(duration_seconds),
+            language_detected=request.language.lower(),
             timestamp=datetime.utcnow().isoformat()
         )
     

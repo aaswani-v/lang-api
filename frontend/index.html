@@ -29,6 +29,16 @@
                     <input type="file" id="audioInput" accept="audio/*" hidden>
                 </div>
 
+                <div class="record-section" aria-live="polite">
+                    <div class="record-divider">or</div>
+                    <div class="record-controls">
+                        <button id="startRecordBtn" class="btn btn-secondary" type="button">Start Recording</button>
+                        <button id="stopRecordBtn" class="btn btn-secondary" type="button" disabled>Stop</button>
+                    </div>
+                    <p class="record-status" id="recordStatus">Use your mic to record a short sample.</p>
+                    <audio id="recordedAudio" class="record-preview" controls style="display: none;"></audio>
+                </div>
+
                 <div class="form-group">
                     <label for="language">Language</label>
                     <select id="language">
