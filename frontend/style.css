@@ -190,23 +190,6 @@ header {
     cursor: not-allowed;
 }
 
-.btn-secondary {
-    background: white;
-    color: var(--primary-dark);
-    border: 1px solid var(--neutral-300);
-}
-
-.btn-secondary:hover:not(:disabled) {
-    border-color: var(--primary-light);
-    box-shadow: 0 6px 12px rgba(30, 64, 175, 0.15);
-    transform: translateY(-1px);
-}
-
-.btn-secondary:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
 .btn-close {
     background: none;
     border: none;
@@ -237,47 +220,6 @@ header {
     display: flex;
     flex-direction: column;
     gap: 24px;
-}
-
-/* Recording */
-.record-section {
-    margin-top: 16px;
-    padding: 12px;
-    border: 1px dashed var(--neutral-300);
-    border-radius: 8px;
-    background: var(--neutral-50);
-}
-
-.record-divider {
-    text-align: center;
-    color: var(--neutral-600);
-    font-size: 0.85rem;
-    margin-bottom: 10px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-}
-
-.record-controls {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-}
-
-.record-status {
-    margin-top: 10px;
-    font-size: 0.9rem;
-    color: var(--neutral-700);
-}
-
-.record-status.recording::before {
-    content: "●";
-    color: var(--danger);
-    margin-right: 6px;
-}
-
-.record-preview {
-    margin-top: 10px;
-    width: 100%;
 }
 
 /* Confidence Section */
