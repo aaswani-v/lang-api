@@ -6,7 +6,7 @@ Simplified version without heavy dependencies
 from fastapi import FastAPI, HTTPException, Header, File, UploadFile
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, field_validator, ConfigDict
 from typing import Optional
 import os
 import logging
@@ -46,21 +46,27 @@ SAMPLE_RATE = 16000
 API_KEY = os.getenv("VANICHECK_API_KEY", "vanicheck-secret-key-2026")
 MIN_CONFIDENCE_THRESHOLD = 0.70
 
+
 # ==================== Models ====================
 class AudioDetectionRequest(BaseModel):
-    audio_data: Optional[str] = None  # Base64 encoded audio (our format)
-    audioBase64: Optional[str] = None  # Alternative format (hackathon form)
+    model_config = ConfigDict(populate_by_name=True)
+    
+    audio_data: Optional[str] = Field(None, alias="audioBase64")
     language: str
-    audioFormat: Optional[str] = None  # Optional format field
+    audioFormat: Optional[str] = None
     filename: Optional[str] = None
     
-    def __init__(self, **data):
-        # Support both naming conventions
-        if 'audioBase64' in data and 'audio_data' not in data:
-            data['audio_data'] = data.pop('audioBase64')
-        super().__init__(**data)
-        # Normalize language to lowercase
-        self.language = self.language.lower()
+    @field_validator('language')
+    @classmethod
+    def normalize_language(cls, v):
+        return v.lower() if v else v
+    
+    @field_validator('audio_data', mode='before')
+    @classmethod
+    def check_audio_data(cls, v):
+        if not v:
+            raise ValueError('audio_data or audioBase64 is required')
+        return v
 
 class AudioDetectionResponse(BaseModel):
     verdict: str  # "HUMAN" or "AI_GENERATED"
