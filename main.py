@@ -245,11 +245,22 @@ class AudioProcessor:
     """Handle audio data extraction and processing"""
     
     @staticmethod
-    def decode_audio(audio_base64: str) -> np.ndarray:
+    def decode_audio(audio_base64: str, audio_format: Optional[str] = None, filename: Optional[str] = None) -> np.ndarray:
         """Decode base64 audio data"""
         try:
-            audio_bytes = base64.b64decode(audio_base64)
-            with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp:
+            # Strip data URL prefix if present
+            if "," in audio_base64:
+                audio_base64 = audio_base64.split(",", 1)[1]
+
+            audio_bytes = base64.b64decode(audio_base64, validate=False)
+
+            suffix = ".wav"
+            if filename and "." in filename:
+                suffix = f".{filename.split('.')[-1].lower()}"
+            elif audio_format:
+                suffix = f".{audio_format.lower()}"
+
+            with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
                 tmp.write(audio_bytes)
                 tmp_path = tmp.name
             
@@ -371,7 +382,11 @@ async def detect_deepfake(request: AudioDetectionRequest, x_api_key: Optional[st
             raise HTTPException(status_code=400, detail=f"Language {request.language} not supported")
         
         # Decode and preprocess audio
-        audio_data = AudioProcessor.decode_audio(request.audio_data)
+        audio_data = AudioProcessor.decode_audio(
+            request.audio_data,
+            audio_format=request.audioFormat,
+            filename=request.filename
+        )
         duration_seconds = len(audio_data) / float(SAMPLE_RATE)
         if duration_seconds > MAX_AUDIO_SECONDS:
             raise HTTPException(
